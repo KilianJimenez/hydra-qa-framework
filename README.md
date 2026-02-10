@@ -1,5 +1,7 @@
 # 🐍 HydraQA
 
+![](/resources/hydraqa-logo.png)
+
 **HydraQA** is a next-generation QA Automation framework based on **AI agents**, designed to cover the entire quality lifecycle of an application: from test case definition to assisted manual execution and web & mobile automation.
 
 Inspired by the nature of Hydra, the framework leverages multiple specialized agents working in coordination to tackle quality challenges from different angles.
