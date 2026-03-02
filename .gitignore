@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build
+dist/
+build/
+*.tsbuildinfo
+
+# Test Results & Reports
+automation-web/test-results/
+automation-web/playwright-report/
+automation-web/blob-report/
+automation-web/allure-results/
+automation-web/allure-report/
+automation-apps/test-results/
+automation-apps/allure-results/
+automation-apps/allure-report/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
