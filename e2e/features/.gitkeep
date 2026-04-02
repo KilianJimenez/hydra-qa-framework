@@ -1,0 +1,10 @@
+// E2E features directory
+// Organize feature files by functional area:
+//
+// e2e/features/
+// ├── auth/
+// │   ├── login.feature
+// │   └── registration.feature
+// ├── dashboard/
+// │   └── overview.feature
+// └── ...

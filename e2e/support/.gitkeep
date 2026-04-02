@@ -1,0 +1,7 @@
+// Support directory for helpers, utilities, and constants
+//
+// e2e/support/
+// ├── test-data.ts        — Test data factories and builders
+// ├── constants.ts        — Shared constants (timeouts, URLs, etc.)
+// ├── helpers.ts          — Utility functions
+// └── ...

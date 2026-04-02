@@ -1,86 +1,51 @@
 ---
-description: "General instructions for all HydraQA agents"
+applyTo: "**"
 ---
 
-# 🐍 HydraQA — General Agent Instructions
+# Hydra QA Framework — General Instructions
 
-You are an AI agent operating inside the **HydraQA** test automation framework.
-You support a Senior QA Automation Engineer across the full quality lifecycle.
+## Framework Overview
 
-## Framework Context
+Hydra QA Framework is an orchestrated agent system for managing the full QA lifecycle:
+functional refinement, test generation, manual testing, and E2E test automation.
 
-HydraQA is a multi-platform BDD automation framework:
-
-| Domain | Stack |
-|--------|-------|
-| **Web** | Playwright + Cucumber (TypeScript) |
-| **Mobile** | Appium + WebdriverIO + Cucumber (TypeScript) |
-| **BDD** | Gherkin `.feature` files in `/features/` |
-
-### Folder Structure
+## Project Structure
 
 ```
 hydra-qa-framework/
 ├── .github/
-│   ├── agents/         ← Agent definitions
-│   ├── instructions/   ← Agent instructions (this file)
-│   ├── prompts/        ← Reusable prompt templates
-│   └── skills/         ← Skill definitions
-├── features/           ← Gherkin .feature files (shared across domains)
-│   └── <module>/
-│       └── <module>.feature
-├── automation-web/     ← Playwright automation project
-│   └── src/
-│       ├── config/     ← Environment & browser config
-│       ├── pages/      ← Page Object Model classes
-│       ├── steps/      ← Cucumber step definitions
-│       ├── support/    ← Hooks, world, fixtures
-│       ├── data/       ← Test data factories
-│       └── utils/      ← Shared utilities (logger, helpers)
-├── automation-apps/    ← Appium automation project
-│   └── src/
-│       ├── config/     ← Device capabilities config
-│       ├── screens/    ← Screen Object Model classes
-│       ├── steps/      ← Cucumber step definitions
-│       ├── support/    ← Hooks, session management
-│       ├── data/       ← Test data factories
-│       └── utils/      ← Shared utilities
-└── resources/          ← Shared assets
+│   ├── agents/          # Agent definitions (conductor + subagents)
+│   ├── instructions/    # Context-specific instructions for agents
+│   └── prompts/         # Reusable prompt templates for workflows
+├── e2e/
+│   ├── features/        # Gherkin feature files (BDD)
+│   ├── steps/           # Step definitions (playwright-bdd)
+│   ├── pages/           # Page Object Model classes
+│   ├── fixtures/        # Playwright custom fixtures
+│   ├── support/         # Helpers, utilities, constants
+│   └── config/          # Environment configuration
+├── docs/                # Framework documentation
+├── resources/           # Static resources (logos, assets)
+├── playwright.config.ts # Playwright + BDD configuration
+├── package.json
+└── tsconfig.json
 ```
 
-## Core Principles
+## Language & Style
 
-1. **BDD First** — All test scenarios are defined in Gherkin `.feature` files before any automation code.
-2. **Separation of Concerns** — AI agents/skills are decoupled from automation code. Agents orchestrate; automation executes.
-3. **Traceability** — Every test links back to a Jira ticket via tags: `@JIRA-ID`.
-4. **Reusability** — Prefer skills and page/screen objects. Avoid duplicating logic.
-5. **Stability** — Built-in waits, retries, session recovery. No flaky shortcuts.
+- All code and documentation must be written in **English**.
+- Use **TypeScript** for all automation code.
+- Use **Gherkin** for feature files.
+- Follow clean code principles: meaningful names, small functions, single responsibility.
 
-## Tagging Convention
+## Agent System
 
-Feature file tags follow this format:
-```gherkin
-@JIRA-123 @web @signup @smoke
-Scenario: ...
-```
-- `@JIRA-XXX` — Links to Jira ticket
-- `@web` / `@mobile` / `@android` / `@ios` — Platform domain
-- `@<component>` — Feature area (signup, checkout, etc.)
-- `@smoke` / `@regression` / `@e2e` — Test suite classification
+The framework operates with 5 agents:
 
-## Code Conventions
+1. **Conductor** — Orchestrator, interacts with the user.
+2. **Refiner** — Functional analysis and DoR validation.
+3. **Generator** — Test case creation from acceptance criteria.
+4. **Manual Tester** — Manual test execution via browser.
+5. **Automator** — E2E test automation with Playwright + BDD.
 
-- **TypeScript** for all automation code
-- **Page Object Model** (web) / **Screen Object Model** (mobile)
-- Selectors: prefer `data-testid` (web), accessibility IDs (mobile)
-- No hardcoded waits (`sleep`). Use explicit waits only.
-- All page/screen objects extend a base class
-- Step definitions should be thin — delegate to page/screen objects
-
-## When Generating Code
-
-- Always include JSDoc comments for public methods
-- Add proper TypeScript types — no `any`
-- Follow existing patterns in the codebase
-- Validate with `get_errors` after any file edit
-
+See `.github/agents/` for full agent definitions.

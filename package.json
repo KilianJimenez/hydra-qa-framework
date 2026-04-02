@@ -1,0 +1,22 @@
+{
+  "name": "hydra-qa-framework",
+  "version": "1.0.0",
+  "description": "Hydra QA Framework — Orchestrated agent system for E2E test automation with Playwright + BDD",
+  "private": true,
+  "scripts": {
+    "test": "npx bddgen && npx playwright test",
+    "test:chromium": "npx bddgen && npx playwright test --project=chromium",
+    "test:firefox": "npx bddgen && npx playwright test --project=firefox",
+    "test:webkit": "npx bddgen && npx playwright test --project=webkit",
+    "test:headed": "npx bddgen && npx playwright test --headed",
+    "test:debug": "npx bddgen && npx playwright test --debug",
+    "test:ui": "npx bddgen && npx playwright test --ui",
+    "report": "npx playwright show-report",
+    "bddgen": "npx bddgen"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.0",
+    "playwright-bdd": "^8.5.0",
+    "typescript": "^5.7.0"
+  }
+}

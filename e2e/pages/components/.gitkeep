@@ -1,0 +1,8 @@
+// Reusable UI components directory
+// Components are UI elements shared across multiple pages (navbar, sidebar, modals, etc.)
+//
+// e2e/pages/components/
+// ├── navbar.component.ts
+// ├── sidebar.component.ts
+// ├── modal.component.ts
+// └── ...

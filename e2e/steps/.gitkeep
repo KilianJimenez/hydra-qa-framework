@@ -1,0 +1,8 @@
+// Step definitions directory
+// Organize step files by functional area:
+//
+// e2e/steps/
+// ├── auth.steps.ts
+// ├── dashboard.steps.ts
+// ├── common.steps.ts
+// └── ...
