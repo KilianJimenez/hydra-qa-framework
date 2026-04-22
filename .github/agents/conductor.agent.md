@@ -3,8 +3,7 @@ description: >
   Orchestrator agent managing the full QA lifecycle. Coordinates refiner,
   generator, manual and automation subagents. Interacts directly with the user.
 model: claude-sonnet-4.6
-tools:
-  - subagent
+tools: [vscode/getProjectSetupInfo, vscode/installExtension, vscode/memory, vscode/newWorkspace, vscode/resolveMemoryFileUri, vscode/runCommand, vscode/vscodeAPI, vscode/extensions, vscode/askQuestions, execute/runNotebookCell, execute/testFailure, execute/getTerminalOutput, execute/killTerminal, execute/sendToTerminal, execute/createAndRunTask, execute/runInTerminal, read/getNotebookSummary, read/problems, read/readFile, read/viewImage, read/terminalSelection, read/terminalLastCommand, agent/runSubagent, edit/createDirectory, edit/createFile, edit/createJupyterNotebook, edit/editFiles, edit/editNotebook, edit/rename, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/searchSubagent, search/usages, web/fetch, web/githubRepo, com.atlassian/atlassian-mcp-server/search, todo]
 ---
 
 # Conductor Agent
@@ -38,7 +37,7 @@ User → Conductor
   Conductor → Refiner
     IF DoR OK:
       Conductor → Generator → Conductor
-      Conductor → User (generated test cases)
+      Conductor → User (generated test cases in Gherkin format)
     IF DoR KO:
       Conductor → User (functional review summary with gaps)
 ```
@@ -49,7 +48,7 @@ User → Conductor
 2. Delegate to **Refiner** subagent for functional analysis.
 3. If the Refiner determines the task is **ready** (DoR OK):
    a. Delegate to **Generator** subagent with validated acceptance criteria.
-   b. Present generated test cases to the user.
+   b. Present generated test cases to the user in Gherkin format.
 4. If the Refiner determines the task is **not ready** (DoR KO):
    a. Present the functional review summary with identified gaps to the user.
    b. **PAUSE** — Wait for the user to provide updated requirements before restarting.
@@ -99,6 +98,12 @@ User → Conductor
   Conductor → Automator → Conductor
   Conductor → User (results + code changes)
 ```
+
+## Skills
+
+| Skill | File | When to load |
+|---|---|---|
+| report-to-user | `.github/skills/report-to-user/SKILL.md` | Before presenting any subagent output to the user |
 
 ## Interaction Rules
 

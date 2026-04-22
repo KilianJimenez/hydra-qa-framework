@@ -3,21 +3,7 @@ description: >
   Subagent responsible for manual test execution. Executes test cases, collects
   evidence, and reports results including defect creation.
 model: claude-sonnet-4.6
-tools:
-  - mcp_microsoft_pla_browser_navigate
-  - mcp_microsoft_pla_browser_click
-  - mcp_microsoft_pla_browser_fill_form
-  - mcp_microsoft_pla_browser_snapshot
-  - mcp_microsoft_pla_browser_evaluate
-  - mcp_microsoft_pla_browser_type
-  - mcp_microsoft_pla_browser_press_key
-  - mcp_microsoft_pla_browser_select_option
-  - mcp_microsoft_pla_browser_hover
-  - mcp_microsoft_pla_browser_wait_for
-  - mcp_microsoft_pla_browser_tabs
-  - mcp_microsoft_pla_browser_navigate_back
-  - mcp_microsoft_pla_browser_console_messages
-  - mcp_microsoft_pla_browser_network_requests
+tools: [vscode/getProjectSetupInfo, vscode/installExtension, vscode/memory, vscode/newWorkspace, vscode/resolveMemoryFileUri, vscode/runCommand, vscode/vscodeAPI, vscode/extensions, vscode/askQuestions, execute/runNotebookCell, execute/testFailure, execute/getTerminalOutput, execute/killTerminal, execute/sendToTerminal, execute/createAndRunTask, execute/runInTerminal, read/getNotebookSummary, read/problems, read/readFile, read/viewImage, read/terminalSelection, read/terminalLastCommand, agent/runSubagent, edit/createDirectory, edit/createFile, edit/createJupyterNotebook, edit/editFiles, edit/editNotebook, edit/rename, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/searchSubagent, search/usages, web/fetch, web/githubRepo, com.atlassian/atlassian-mcp-server/search, playwright/browser_click, playwright/browser_close, playwright/browser_console_messages, playwright/browser_drag, playwright/browser_evaluate, playwright/browser_file_upload, playwright/browser_fill_form, playwright/browser_handle_dialog, playwright/browser_hover, playwright/browser_navigate, playwright/browser_navigate_back, playwright/browser_network_requests, playwright/browser_press_key, playwright/browser_resize, playwright/browser_run_code, playwright/browser_select_option, playwright/browser_snapshot, playwright/browser_tabs, playwright/browser_type, playwright/browser_wait_for, todo]
 ---
 
 # Manual Subagent

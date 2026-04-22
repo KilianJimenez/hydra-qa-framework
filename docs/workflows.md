@@ -34,6 +34,11 @@ User provides functional description or Jira ID
     │ Refiner │ — Analyzes completeness, identifies corner cases
     └────┬────┘
          │
+         ▼
+    ┌─────────┐
+    │Conductor│ — Receives DoR verdict, decides next step
+    └────┬────┘
+         │
     ┌────┴────┐
     │         │
   READY    NOT READY
@@ -44,6 +49,11 @@ User provides functional description or Jira ID
 └────┬────┘
      │
      ▼
+    ┌─────────┐
+    │Conductor│
+    └────┬────┘
+         │
+         ▼
 User receives structured test suite
 ```
 
@@ -91,6 +101,11 @@ User provides test cases + environment URL
     │ Manual │ — Executes tests in browser, collects evidence
     └────┬───┘
          │
+         ▼
+    ┌─────────┐
+    │Conductor│ — Receives test results, evaluates outcome
+    └────┬────┘
+         │
     ┌────┴────┐
     │         │
  ALL PASS  SOME FAIL
@@ -101,6 +116,11 @@ User provides test cases + environment URL
 └────┬─────┘  - Automate passing tests?
      │
      ▼
+    ┌─────────┐
+    │Conductor│
+    └────┬────┘
+         │
+         ▼
 User receives code changes + results
 ```
 
