@@ -91,14 +91,14 @@ For each page involved in the test:
 **Example:**
 
 ```typescript
-// e2e/pages/loyalty/msc-home.page.ts
+// e2e/pages/loyalty/loyalty-home.page.ts
 import { Page, expect } from '@playwright/test';
 import { BasePage } from '../base.page';
 
-export class MscHomePage extends BasePage {
-  protected readonly url = '/es/es/my-mango-style-club/';
+export class LoyaltyHomePage extends BasePage {
+  protected readonly url = '/loyalty/home/';
 
-  private readonly benefitsSection = this.page.getByRole('region', { name: 'Ventajas de mi nivel' });
+  private readonly benefitsSection = this.page.getByRole('region', { name: 'My tier benefits' });
 
   constructor(page: Page) {
     super(page);
@@ -131,13 +131,13 @@ Create or update feature files in `e2e/features/[functional-area]/`.
 
 ```gherkin
 @loyalty @regression
-Feature: MSC Home Benefits
+Feature: Loyalty Home Benefits
 
   Background:
-    Given the user is logged in as an MSC member
+    Given the user is logged in as a loyalty member
 
   Scenario: User sees benefits for their current tier
-    When the user navigates to the MSC home page
+    When the user navigates to the loyalty home page
     Then the user should see the benefits section
 ```
 
@@ -163,19 +163,19 @@ Create or update step files in `e2e/steps/[functional-area].steps.ts`.
 // e2e/steps/loyalty.steps.ts
 import { Given, When, Then } from '../fixtures/fixtures';
 
-Given('the user is logged in as an MSC member', async ({ loginPage }) => {
+Given('the user is logged in as a loyalty member', async ({ loginPage }) => {
   await loginPage.navigate();
-  await loginPage.fillEmail('test@mango.com');
-  await loginPage.fillPassword('Mango12345');
+  await loginPage.fillEmail('test@example.com');
+  await loginPage.fillPassword('TestPassword123');
   await loginPage.submit();
 });
 
-When('the user navigates to the MSC home page', async ({ mscHomePage }) => {
-  await mscHomePage.navigate();
+When('the user navigates to the loyalty home page', async ({ loyaltyHomePage }) => {
+  await loyaltyHomePage.navigate();
 });
 
-Then('the user should see the benefits section', async ({ mscHomePage }) => {
-  await mscHomePage.expectBenefitsSectionToBeVisible();
+Then('the user should see the benefits section', async ({ loyaltyHomePage }) => {
+  await loyaltyHomePage.expectBenefitsSectionToBeVisible();
 });
 ```
 
@@ -187,15 +187,15 @@ Update `e2e/fixtures/fixtures.ts` to register new page objects:
 
 ```typescript
 import { test as base, createBdd } from 'playwright-bdd';
-import { MscHomePage } from '../pages/loyalty/msc-home.page';
+import { LoyaltyHomePage } from '../pages/loyalty/loyalty-home.page';
 
 type Fixtures = {
-  mscHomePage: MscHomePage;
+  loyaltyHomePage: LoyaltyHomePage;
 };
 
 export const test = base.extend<Fixtures>({
-  mscHomePage: async ({ page }, use) => {
-    await use(new MscHomePage(page));
+  loyaltyHomePage: async ({ page }, use) => {
+    await use(new LoyaltyHomePage(page));
   },
 });
 
