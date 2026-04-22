@@ -63,10 +63,14 @@ The Hydra QA Framework supports four main workflows, all orchestrated by the Con
                                   └─────┬──────┘     │ (decide)  │
                                         │            └─────┬─────┘
                                   ┌─────▼─────┐    ┌───────┴──────┐
-                                  │   User    │    │              │
-                                  │ (results) │  Automate?     Report?
-                                  └───────────┘    │              │
-                                             ┌─────▼──────┐  ┌────▼───┐
+                                  │ Conductor │    │              │
+                                  └─────┬─────┘  Automate?     Report?
+                                        │          │              │
+                                  ┌─────▼─────┐ ┌──▼────────┐ ┌──▼────────┐
+                                  │   User    │ │ Conductor │ │ Conductor │
+                                  │ (results) │ └──┬────────┘ └──┬────────┘
+                                  └───────────┘    │             │
+                                             ┌─────▼──────┐  ┌───▼────┐
                                              │ Automator  │  │ Manual │
                                              └────────────┘  │(defect)│
                                                              └────────┘
