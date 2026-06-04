@@ -190,7 +190,10 @@ async function main() {
   process.stdout.write(output + '\n');
 }
 
-main().catch((err) => {
-  console.error(`❌ Failed to fetch Jira issue: ${err.message}`);
-  process.exit(1);
-});
+// Only run as CLI entrypoint, not when imported as a module
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((err) => {
+    console.error(`❌ Failed to fetch Jira issue: ${err.message}`);
+    process.exit(1);
+  });
+}
