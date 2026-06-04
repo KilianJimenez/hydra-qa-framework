@@ -121,3 +121,53 @@ These are moments where the Conductor **must stop and wait** for user input:
 | New Feature         | After Generator presents test cases                      |
 | Implementation      | After Manual reports failures (decide on defect/automate)|
 | All                 | Before starting any workflow (confirm plan)              |
+
+---
+
+## CI Integration (GitHub Actions)
+
+Workflows 1 and 2 can also be triggered from CI via GitHub Actions using GitHub Models API.
+
+### How It Works
+
+- The workflows are exposed as `workflow_dispatch` triggers in `.github/workflows/`.
+- They use the **GitHub Models** inference endpoint (`https://models.github.ai/inference`) with your GitHub Copilot subscription token.
+- The CI runner calls the same Refiner/Generator/Automator prompts used locally, but in a non-interactive mode.
+
+### Available CI Workflows
+
+| Workflow                | File                                          | Trigger           |
+| ----------------------- | --------------------------------------------- | ----------------- |
+| New Feature Definition  | `.github/workflows/new-feature-definition.yml`| `workflow_dispatch` |
+| Implementation Developed| `.github/workflows/implementation-developed.yml`| `workflow_dispatch` |
+
+### CI vs Local Differences
+
+| Aspect             | Local (Chat)                        | CI (GitHub Actions)                     |
+| ------------------ | ----------------------------------- | --------------------------------------- |
+| Manual testing     | Interactive browser via MCP         | Skipped (no browser available)          |
+| User pauses        | Conductor pauses for confirmation   | Runs end-to-end without pauses          |
+| Defect reporting   | Interactive decision                | Not available in CI mode                |
+| Output             | Chat conversation                   | Job summary + artifact (JSON)           |
+
+### Prerequisites
+
+- A GitHub account with **GitHub Copilot** subscription (provides Models API access).
+- The repository's `GITHUB_TOKEN` must have `models:read` permission.
+- No additional secrets needed — the built-in token works.
+
+### Running from CLI
+
+You can also trigger these workflows locally via the GitHub CLI:
+
+```bash
+# New Feature Definition
+gh workflow run "QA: New Feature Definition" \
+  -f description="As a user, I want to reset my password so that I can regain access to my account..."
+
+# Implementation Developed
+gh workflow run "QA: Implementation Developed" \
+  -f test-cases="TC-001: Verify password reset email is sent..." \
+  -f environment-url="https://staging.myapp.com" \
+  -f setup-instructions="Use test account: user@test.com / pass123"
+```
