@@ -1,0 +1,14 @@
+{
+  "name": "hydra-ci-workflows",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "CI scripts for Hydra QA Framework workflows using GitHub Models",
+  "scripts": {
+    "new-feature": "node run-workflow.mjs new-feature-definition",
+    "implementation": "node run-workflow.mjs implementation-developed"
+  },
+  "dependencies": {
+    "openai": "^4.80.0"
+  }
+}

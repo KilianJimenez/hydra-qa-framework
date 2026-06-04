@@ -1,0 +1,66 @@
+name: "QA: Implementation Developed"
+
+on:
+  workflow_dispatch:
+    inputs:
+      test-cases:
+        description: "Test cases to automate (paste full test cases or reference existing ones)"
+        required: true
+        type: string
+      environment-url:
+        description: "Environment URL where the implementation is deployed"
+        required: false
+        type: string
+      setup-instructions:
+        description: "Additional setup instructions or credentials context"
+        required: false
+        type: string
+      model:
+        description: "GitHub Models model to use"
+        required: false
+        type: choice
+        default: "openai/gpt-4.1"
+        options:
+          - "openai/gpt-4.1"
+          - "openai/gpt-4.1-mini"
+          - "openai/gpt-4o"
+
+permissions:
+  contents: read
+  models: read
+
+jobs:
+  generate-automation:
+    name: Generate E2E Automation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install CI dependencies
+        working-directory: .github/ci
+        run: npm ci
+
+      - name: Run Implementation Developed workflow
+        working-directory: .github/ci
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_MODELS_MODEL: ${{ inputs.model }}
+          WORKFLOW_INPUT: >-
+            {"testCases": "${{ inputs.test-cases }}", "environmentUrl": "${{ inputs.environment-url }}", "setupInstructions": "${{ inputs.setup-instructions }}"}
+          WORKFLOW_OUTPUT: ${{ runner.temp }}/workflow-output.json
+        run: node run-workflow.mjs implementation-developed
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: implementation-results
+          path: ${{ runner.temp }}/workflow-output.json
+          retention-days: 30
