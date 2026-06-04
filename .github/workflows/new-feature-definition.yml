@@ -48,7 +48,7 @@ jobs:
           JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
           WORKFLOW_INPUT: >-
-            {"description": "${{ inputs.description }}"}
+            {"description": ${{ toJSON(inputs.description) }}}
           WORKFLOW_OUTPUT: ${{ runner.temp }}/workflow-output.json
         run: node run-workflow.mjs new-feature-definition
 

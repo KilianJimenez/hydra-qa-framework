@@ -53,7 +53,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_MODELS_MODEL: ${{ inputs.model }}
           WORKFLOW_INPUT: >-
-            {"testCases": "${{ inputs.test-cases }}", "environmentUrl": "${{ inputs.environment-url }}", "setupInstructions": "${{ inputs.setup-instructions }}"}
+            {"testCases": ${{ toJSON(inputs.test-cases) }}, "environmentUrl": ${{ toJSON(inputs.environment-url) }}, "setupInstructions": ${{ toJSON(inputs.setup-instructions) }}}
           WORKFLOW_OUTPUT: ${{ runner.temp }}/workflow-output.json
         run: node run-workflow.mjs implementation-developed
 
