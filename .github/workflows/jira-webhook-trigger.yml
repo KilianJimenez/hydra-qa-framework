@@ -81,30 +81,13 @@ jobs:
           AUTH=$(echo -n "$JIRA_EMAIL:$JIRA_API_TOKEN" | base64)
           SUMMARY=$(jq -r '.summary // "No summary available."' "${{ runner.temp }}/workflow-output.json" 2>/dev/null || echo "No summary available.")
 
+          BODY=$(jq -n \
+            --arg run_url "$RUN_URL" \
+            '{body:{version:1,type:"doc",content:[{type:"paragraph",content:[{type:"emoji",attrs:{shortName:":white_check_mark:"}},{type:"text",text:" Comment text executed from GitHub Actions."}]},{type:"paragraph",content:[{type:"text",text:"Full results: "},{type:"text",text:"GitHub Actions run",marks:[{type:"link",attrs:{href:$run_url}}]}]}]}}')
+
           curl --silent --fail --show-error \
             --request POST \
             --url "$BASE_URL/rest/api/3/issue/$ISSUE_KEY/comment" \
             --header "Authorization: Basic $AUTH" \
             --header "Content-Type: application/json" \
-            --data "{
-              \"body\": {
-                \"version\": 1,
-                \"type\": \"doc\",
-                \"content\": [
-                  {
-                    \"type\": \"paragraph\",
-                    \"content\": [
-                      { \"type\": \"emoji\", \"attrs\": { \"shortName\": \":white_check_mark:\" } },
-                      { \"type\": \"text\", \"text\": \" Comment text executed from GitHub Actions.\" }
-                    ]
-                  },
-                  {
-                    \"type\": \"paragraph\",
-                    \"content\": [
-                      { \"type\": \"text\", \"text\": \"Full results: \" },
-                      { \"type\": \"text\", \"text\": \"GitHub Actions run\", \"marks\": [ { \"type\": \"link\", \"attrs\": { \"href\": \"$RUN_URL\" } } ] }
-                    ]
-                  }
-                ]
-              }
-            }"
+            --data "$BODY"
