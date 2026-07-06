@@ -78,7 +78,7 @@ jobs:
           # Pass the Jira issue key so the Refiner can fetch full details via the API
         run: |
           BASE_URL="${JIRA_BASE_URL%/}"
-          AUTH=$(echo -n "$JIRA_EMAIL:$JIRA_API_TOKEN" | base64)
+          AUTH=$(printf '%s' "$JIRA_EMAIL:$JIRA_API_TOKEN" | base64 -w 0)
           SUMMARY=$(jq -r '.summary // "No summary available."' "${{ runner.temp }}/workflow-output.json" 2>/dev/null || echo "No summary available.")
 
           BODY=$(jq -n \
