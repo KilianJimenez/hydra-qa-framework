@@ -1,0 +1,87 @@
+name: "QA: Refinement from Jira"
+
+# Triggered by Jira Automation via an incoming webhook.
+# In Jira Automation, configure a "Send web request" action with:
+#   URL:    https://api.github.com/repos/<owner>/<repo>/dispatches
+#   Method: POST
+#   Headers:
+#     Authorization: Bearer <JIRA_GITHUB_PAT>   (repo secret — see below)
+#     Content-Type:  application/json
+#   Body:
+#     {
+#       "event_type": "jira-qa-trigger",
+#       "client_payload": {
+#         "issue_key":    "{{issue.key}}",
+#         "issue_summary": "{{issue.summary}}",
+#         "issue_type":   "{{issue.type}}",
+#         "status":       "{{issue.status.name}}",
+#         "description":  "{{issue.description}}",
+#         "reporter":     "{{issue.reporter.displayName}}",
+#         "assignee":     "{{issue.assignee.displayName}}"
+#       }
+#     }
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   JIRA_BASE_URL      — e.g. https://your-org.atlassian.net
+#   JIRA_EMAIL         — service-account email used for Jira REST API
+#   JIRA_API_TOKEN     — Jira API token for that service account
+#
+# Required repository variables (Settings → Secrets and variables → Actions → Variables):
+#   JIRA_QA_TRIGGER_EVENT_TYPE  — must match the event_type sent by Jira (default: jira-qa-trigger)
+#   GITHUB_MODELS_DEFAULT_MODEL — model to use (default: openai/gpt-4.1)
+
+on:
+  repository_dispatch:
+    types:
+      - jira-qa-trigger  # Must match the event_type value sent by Jira Automation
+
+permissions:
+  contents: read
+  models: read
+
+jobs:
+  handle-jira-event:
+    name: Handle Jira Event — ${{ github.event.client_payload.issue_key }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install CI dependencies
+        working-directory: .github/ci
+        run: npm ci
+
+      - name: Print incoming payload (debug)
+        run: |
+          echo "Issue Key:     ${{ github.event.client_payload.issue_key }}"
+          echo "Issue Type:    ${{ github.event.client_payload.issue_type }}"
+          echo "Status:        ${{ github.event.client_payload.status }}"
+          echo "Reporter:      ${{ github.event.client_payload.reporter }}"
+
+      - name: Run New Feature Definition workflow
+        working-directory: .github/ci
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_MODELS_MODEL: ${{ vars.GITHUB_MODELS_DEFAULT_MODEL || 'openai/gpt-4.1' }}
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          # Pass the Jira issue key so the Refiner can fetch full details via the API
+          WORKFLOW_INPUT: >-
+            {"description": ${{ toJSON(github.event.client_payload.issue_key) }}}
+          WORKFLOW_OUTPUT: ${{ runner.temp }}/workflow-output.json
+        run: node run-workflow.mjs new-feature-definition
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jira-${{ github.event.client_payload.issue_key }}-results
+          path: ${{ runner.temp }}/workflow-output.json
+          retention-days: 30
