@@ -65,10 +65,11 @@ jobs:
           echo "Reporter:      ${{ github.event.client_payload.reporter }}"
 
       - name: Run New Feature Definition workflow
+        id: qa-workflow
         working-directory: .github/ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_MODELS_MODEL: ${{ vars.GITHUB_MODELS_DEFAULT_MODEL || 'openai/gpt-4.1' }}
+          GITHUB_MODELS_MODEL: ${{ vars.COPILOT_DEFAULT_MODEL || 'openai/gpt-4.1' }}
           JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
           JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
@@ -76,12 +77,30 @@ jobs:
           WORKFLOW_INPUT: >-
             {"description": ${{ toJSON(github.event.client_payload.issue_key) }}}
           WORKFLOW_OUTPUT: ${{ runner.temp }}/workflow-output.json
-        run: node run-workflow.mjs new-feature-definition
-
-      - name: Upload results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jira-${{ github.event.client_payload.issue_key }}-results
-          path: ${{ runner.temp }}/workflow-output.json
-          retention-days: 30
+        run: |
+          curl --silent --fail --show-error \
+            --request POST \
+            --url "$JIRA_BASE_URL/rest/api/3/issue/$ISSUE_KEY/comment" \
+            --user "$JIRA_EMAIL:$JIRA_API_TOKEN" \
+            --header "Content-Type: application/json" \
+            --data "{
+              \"body\": {
+                \"version\": 1,
+                \"type\": \"doc\",
+                \"content\": [
+                  {
+                    \"type\": \"paragraph\",
+                    \"content\": [
+                      { \"type\": \"text\", \"text\": \" Comment text executed from GitHub Actions.\" }
+                    ]
+                  },
+                  {
+                    \"type\": \"paragraph\",
+                    \"content\": [
+                      { \"type\": \"text\", \"text\": \"Full results: \" },
+                      { \"type\": \"text\", \"text\": \"GitHub Actions run\", \"marks\": [ { \"type\": \"link\", \"attrs\": { \"href\": \"$RUN_URL\" } } ] }
+                    ]
+                  }
+                ]
+              }
+            }"
