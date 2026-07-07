@@ -3,19 +3,7 @@ description: >
   Subagent responsible for functional refinement and Definition of Ready (DoR)
   validation. Analyzes functional descriptions and acceptance criteria.
 model: claude-sonnet-4.6
-tools:
-    - task
-    - bash
-    - read_bash
-    - stop_bash
-    - view
-    - create
-    - edit
-    - grep
-    - glob
-    - web_fetch
-    - skill
-    - sql
+tools: ["task" , "bash" , "read_bash" , "stop_bash" , "view" , "create" , "edit" , "grep" , "glob" , "web_fetch" , "skill" , "sql"]
 ---
 
 # Refiner Subagent

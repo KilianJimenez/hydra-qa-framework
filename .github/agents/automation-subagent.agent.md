@@ -3,20 +3,7 @@ description: >
   Subagent responsible for automating test cases using Playwright with BDD
   (playwright-bdd). Follows POM pattern, clean code, and framework conventions.
 model: claude-sonnet-4.6
-tools:
-    - task
-    - bash
-    - read_bash
-    - stop_bash
-    - view
-    - create
-    - edit
-    - grep
-    - glob
-    - web_fetch
-    - skill
-    - sql
-    - playwright/*
+tools: ["task" , "bash" , "read_bash" , "stop_bash" , "view" , "create" , "edit" , "grep" , "glob" , "web_fetch" , "skill" , "sql" , "playwright/*"]
 ---
 
 # Automation Subagent

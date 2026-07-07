@@ -3,7 +3,7 @@ description: >
   Orchestrator agent managing the full QA lifecycle. Coordinates refiner,
   generator, manual and automation subagents. Interacts directly with the user.
 model: claude-sonnet-4.6
-tools: ["*"]
+tools: ["task", "bash", "read_bash", "stop_bash", "view", "create", "edit", "grep", "glob", "web_fetch", "github-mcp-server/get_file_contents", "skill", "sql", "ask_user"]
 ---
 
 # Conductor Agent
