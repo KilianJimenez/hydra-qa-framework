@@ -100,7 +100,7 @@ jobs:
           PROMPT="$(./ci/select-prompt.sh)"
 
           copilot --agent conductor \
-            --available-tools="task" --allow-tool="task" --deny-tool 'shell(git:*)' --no-ask-user \
+            --allow-tool="task" --no-ask-user \
             --log-level error --no-color \
             -p "$PROMPT $ISSUE_KEY" \
             | tee "$RUNNER_TEMP/agent-output.txt"
