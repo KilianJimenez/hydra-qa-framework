@@ -96,7 +96,12 @@ jobs:
             --log-level error --no-color \
             -p "Follow the workflow defined in .github/prompts/new-feature.prompt.md.
                 Jira issue to process: $ISSUE_KEY. Action to perform: $ACTION_TO_PERFORM.
-                Use the get-jira-issue skill to fetch the issue via the Jira REST API." \
+                Use the get-jira-issue skill to fetch the issue via the Jira REST API.
+                If the workflow reaches the Generator step and produces a test suite,
+                the Generator must then use the create-jira-issue skill to automatically
+                create one Jira sub-task per generated scenario, linked to the parent
+                issue $ISSUE_KEY, WITHOUT asking for confirmation (this is CI/non-interactive
+                mode)." \
             | tee "$RUNNER_TEMP/agent-output.txt"
 
       - name: Comment result on Jira issue
