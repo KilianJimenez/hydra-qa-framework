@@ -37,6 +37,11 @@ You will receive from the Conductor:
 - A list of validated **acceptance criteria**.
 - A list of identified **corner cases**.
 - The **functional area** context.
+- **Execution Context**: `CI` or `Local`, always provided explicitly by the
+  Conductor. This is the authoritative signal for whether the workflow is
+  running non-interactively (GitHub Actions) or interactively (chat) — never
+  infer it from other cues (e.g. tool flags, absence of a user). Use this
+  value exactly as defined in Step 5 and the Output section below.
 
 ## Process
 
@@ -148,11 +153,13 @@ user confirmation; or in CI, when explicitly instructed), use the
 **`create-jira-issue`** skill to create **one Sub-task per generated
 scenario**, linked (`fields.parent`) to the source issue being processed:
 
-- **Local**: always ask for confirmation first (see Output section below)
-  before creating anything.
-- **CI** (running non-interactively, e.g. `--no-ask-user`): create the
-  sub-tasks automatically without asking, when the calling prompt/workflow
-  explicitly instructs it.
+- **Local** (`Execution Context: Local`): always ask for confirmation first
+  (see Output section below) before creating anything.
+- **CI** (`Execution Context: CI`, provided explicitly by the Conductor):
+  create the sub-tasks automatically without asking, when the calling
+  prompt/workflow explicitly instructs it. Rely solely on the
+  `Execution Context` value received from the Conductor — never infer CI
+  mode from other cues.
 
 #### Jira Sub-task Format (mandatory in CI mode)
 
@@ -226,8 +233,9 @@ After presenting the test suite:
   - If **Yes**: Proceed to create the tests (use `create-jira-issue` for Jira, one Sub-task per scenario linked to the source issue).
   - If **No**: End activity and return the test suite to the Conductor.
 
-- **CI (non-interactive, e.g. `--no-ask-user`)**: if the calling prompt/workflow
-  explicitly instructs sub-task creation, skip the confirmation and use the
+- **CI (non-interactive)**: when `Execution Context: CI` was received from
+  the Conductor and the calling prompt/workflow explicitly instructs
+  sub-task creation, skip the confirmation and use the
   `create-jira-issue` skill directly to create one Sub-task per scenario,
   linked to the source issue key. Otherwise, just return the test suite.
 

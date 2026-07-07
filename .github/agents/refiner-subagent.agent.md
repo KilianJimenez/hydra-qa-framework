@@ -44,6 +44,11 @@ You will receive one of the following from the Conductor:
 
 - **Plain text**: A functional description with acceptance criteria.
 - **Jira identifier**: A ticket ID (e.g., `PROJ-1234`) to fetch from Jira.
+- **Execution Context**: `CI` or `Local`, always provided explicitly by the
+  Conductor. This is the authoritative signal for whether the workflow is
+  running non-interactively (GitHub Actions) or interactively (chat) — never
+  infer it from other cues. In `CI`, do not pause for user confirmation on
+  ambiguous points; note any assumptions made instead.
 
 ## Process
 
