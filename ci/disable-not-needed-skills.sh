@@ -18,6 +18,9 @@ case "${ACTION_TO_PERFORM:-}" in
   manual-test)
     SKILLS_TO_DISABLE="create-skill refine-functional-description"
     ;;
+  create-us)
+    SKILLS_TO_DISABLE="create-skill automate-test refine-functional-description"
+    ;;
   *)
     SKILLS_TO_DISABLE=""
     ;;

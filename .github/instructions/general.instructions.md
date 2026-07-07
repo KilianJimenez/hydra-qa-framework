@@ -40,12 +40,13 @@ hydra-qa-framework/
 
 ## Agent System
 
-The framework operates with 5 agents:
+The framework operates with 6 agents:
 
 1. **Conductor** — Orchestrator, interacts with the user.
 2. **Refiner** — Functional analysis and DoR validation.
 3. **Generator** — Test case creation from acceptance criteria.
 4. **Manual Tester** — Manual test execution via browser.
 5. **Automator** — E2E test automation with Playwright + BDD.
+6. **Story Writer** — User Story generation from a Jira Epic (vertical slicing).
 
 See `.github/agents/` for full agent definitions.
