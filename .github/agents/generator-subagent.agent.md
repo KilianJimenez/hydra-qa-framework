@@ -4,7 +4,7 @@ description: >
   criteria. Produces a structured test suite in Gherkin format optimized for
   manual execution and E2E automation.
 model: claude-sonnet-4.6
-effort: low
+effort: high
 tools: ["task" , "bash" , "read_bash" , "stop_bash" , "view" , "create" , "edit" , "grep" , "glob" , "web_fetch" , "skill" , "sql"]
 ---
 
