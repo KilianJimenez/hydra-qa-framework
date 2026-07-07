@@ -3,7 +3,7 @@ description: >
   Orchestrator agent managing the full QA lifecycle. Coordinates refiner,
   generator, manual and automation subagents. Interacts directly with the user.
 model: claude-sonnet-4.6
-tools: [vscode/getProjectSetupInfo, vscode/installExtension, vscode/memory, vscode/newWorkspace, vscode/resolveMemoryFileUri, vscode/runCommand, vscode/vscodeAPI, vscode/extensions, vscode/askQuestions, execute/runNotebookCell, execute/testFailure, execute/getTerminalOutput, execute/killTerminal, execute/sendToTerminal, execute/createAndRunTask, execute/runInTerminal, read/getNotebookSummary, read/problems, read/readFile, read/viewImage, read/terminalSelection, read/terminalLastCommand, agent/runSubagent, edit/createDirectory, edit/createFile, edit/createJupyterNotebook, edit/editFiles, edit/editNotebook, edit/rename, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/searchSubagent, search/usages, web/fetch, web/githubRepo, com.atlassian/atlassian-mcp-server/search, todo]
+tools: [task, bash, read_bash, stop_bash, view, create, edit, grep, glob, web_fetch, github-mcp-server/get_file_contents, skill, sql, ask_user]
 ---
 
 # Conductor Agent

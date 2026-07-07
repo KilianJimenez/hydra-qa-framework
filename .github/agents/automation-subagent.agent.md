@@ -4,14 +4,18 @@ description: >
   (playwright-bdd). Follows POM pattern, clean code, and framework conventions.
 model: claude-sonnet-4.6
 tools:
-    - vscode
-    - execute
-    - read
-    - agent
+    - task
+    - bash
+    - read_bash
+    - stop_bash
+    - view
+    - create
     - edit
-    - search
-    - web
-    - todo
+    - grep
+    - glob
+    - web_fetch
+    - skill
+    - sql
     - playwright/*
 ---
 

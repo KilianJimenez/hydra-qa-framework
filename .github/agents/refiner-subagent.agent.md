@@ -4,20 +4,18 @@ description: >
   validation. Analyzes functional descriptions and acceptance criteria.
 model: claude-sonnet-4.6
 tools:
-    - vscode
-    - execute
-    - read
-    - agent
+    - task
+    - bash
+    - read_bash
+    - stop_bash
+    - view
+    - create
     - edit
-    - search/changes
-    - search/codebase
-    - search/fileSearch
-    - search/listDirectory
-    - search/textSearch
-    - search/usages
-    - web
-    - todo
-    - com.atlassian/atlassian-mcp-server/getJiraIssue
+    - grep
+    - glob
+    - web_fetch
+    - skill
+    - sql
 ---
 
 # Refiner Subagent
