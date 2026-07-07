@@ -28,6 +28,14 @@ Provide one of the following:
 3. If the requirement does NOT meet the Definition of Ready:
    - A gap analysis is presented with recommendations.
 
+## CI Mode
+
+When run non-interactively in CI (e.g. via the `jira-webhook-trigger.yml`
+workflow), and the calling prompt explicitly instructs it, the **Generator**
+subagent creates one Jira **Sub-task** per generated scenario using the
+`create-jira-issue` skill, linked to the source Jira issue, without asking
+for confirmation. Locally, the Generator always asks the user first.
+
 ## Expected Output
 
 - Validated acceptance criteria with identified corner cases.
