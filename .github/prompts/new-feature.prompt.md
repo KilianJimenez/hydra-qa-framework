@@ -31,10 +31,21 @@ Provide one of the following:
 ## CI Mode
 
 When run non-interactively in CI (e.g. via the `jira-webhook-trigger.yml`
-workflow), and the calling prompt explicitly instructs it, the **Generator**
-subagent creates one Jira **Sub-task** per generated scenario using the
-`create-jira-issue` skill, linked to the source Jira issue, without asking
-for confirmation. Locally, the Generator always asks the user first.
+workflow, `Execution Context: CI`), instruct the **Generator** subagent as
+follows — this is the explicit instruction the Generator's Step 5 guard
+requires, not merely a description of it:
+
+> **Execution Context: CI.** After generating the test suite, create one
+> Jira **Sub-task** per generated scenario using the `create-jira-issue`
+> skill, linked to the source Jira issue `$ISSUE_KEY`, without asking for
+> confirmation. Do **not** create or modify any repository files (no
+> `.feature` files, no other files) and do **not** run any `git` command
+> (no `git add`, `git commit`, `git push`). The only allowed persistence
+> mechanism is the `create-jira-issue` skill.
+
+Locally (`Execution Context: Local`), the Generator always asks the user
+first before persisting anything, and may create repository `.feature`
+files when the user confirms that path.
 
 ## Expected Output
 
