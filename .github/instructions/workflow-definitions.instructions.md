@@ -115,6 +115,38 @@ The user provides the defect context, and the Manual subagent re-executes the re
 
 ---
 
+## Workflow 5: Epic Breakdown / Create User Stories
+
+**Trigger**: A Jira **Epic** needs to be decomposed into User Stories,
+typically triggered from Jira Automation with `ACTION_TO_PERFORM=create-us`.
+
+**Goal**: Decompose the Epic's description into vertically-sliced,
+INVEST-aligned User Stories and create them in Jira as child issues of the
+Epic. This workflow **skips the Refiner and Generator subagents** — it goes
+straight from the Epic description to generated User Stories (no DoR
+validation, no test case generation).
+
+```
+┌──────┐    ┌───────────┐    ┌──────────────┐    ┌──────┐
+│ User │───▶│ Conductor │───▶│ Story Writer │───▶│ User │
+└──────┘    └───────────┘    └──────────────┘    └──────┘
+```
+
+**Sequence**:
+
+1. User (or Jira Automation trigger) provides the Epic Jira key to Conductor.
+2. Conductor delegates to the **Story Writer** subagent with the Epic key.
+3. Story Writer fetches the Epic (`get-jira-issue`), decomposes its
+   description into vertically-sliced User Stories, and:
+   - **Local**: presents the stories and asks for confirmation before
+     persisting.
+   - **CI**: creates one Jira **Story** per User Story automatically, linked
+     to the Epic via `fields.parent.key` (`create-jira-issue`).
+4. Conductor returns the generated User Stories (and, in CI, the created
+   Jira keys) to the user.
+
+---
+
 ## Mandatory Pause Points
 
 These are moments where the Conductor **must stop and wait** for user input:
@@ -124,6 +156,7 @@ These are moments where the Conductor **must stop and wait** for user input:
 | New Feature         | After Refiner returns NOT READY                          |
 | New Feature         | After Generator presents test cases                      |
 | Implementation      | After Manual reports failures (decide on defect/automate)|
+| Epic Breakdown      | After Story Writer presents User Stories (Local only)    |
 | All                 | Before starting any workflow (confirm plan)              |
 
 ---
@@ -144,6 +177,19 @@ Workflows 1 and 2 can also be triggered from CI via GitHub Actions using GitHub 
 | ----------------------- | --------------------------------------------- | ----------------- |
 | New Feature Definition  | `.github/workflows/new-feature-definition.yml`| `workflow_dispatch` |
 | Implementation Developed| `.github/workflows/implementation-developed.yml`| `workflow_dispatch` |
+
+### `ACTION_TO_PERFORM` → Prompt Mapping
+
+`.github/workflows/jira-webhook-trigger.yml` forwards `ACTION_TO_PERFORM`
+(and `ISSUE_KEY`) to `ci/select-prompt.sh`, which selects the Copilot CLI
+prompt to invoke, and to `ci/disable-not-needed-skills.sh`, which disables
+skills irrelevant to that action:
+
+| `ACTION_TO_PERFORM` | Prompt                          | Workflow                              |
+| -------------------- | -------------------------------- | -------------------------------------- |
+| `refine`             | `/new-feature`                   | New Feature Definition                |
+| `manual-test`        | `/implementation-ready`          | Implementation Developed              |
+| `create-us`          | `/create-user-stories`           | Epic Breakdown / Create User Stories  |
 
 ### CI vs Local Differences
 

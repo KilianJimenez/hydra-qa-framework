@@ -53,6 +53,7 @@ Before starting any workflow, determine whether you are running in **CI**
 | Generator      | `generator-subagent.agent.md`    | Test case generation from acceptance criteria      |
 | Manual Tester  | `manual-subagent.agent.md`       | Manual test execution and evidence collection      |
 | Automator      | `automation-subagent.agent.md`   | E2E test automation with Playwright + BDD          |
+| Story Writer   | `story-writer-subagent.agent.md` | User Story generation from a Jira Epic (vertical slicing) |
 
 ## Workflows
 
@@ -126,6 +127,34 @@ User → Conductor
   Conductor → Automator → Conductor
   Conductor → User (results + code changes)
 ```
+
+### 5. Epic Breakdown / Create User Stories
+
+Triggered when the user (or a Jira Automation trigger via `create-us`) has a
+Jira **Epic** whose description needs to be decomposed into User Stories,
+created in Jira as child issues of the Epic. This workflow **skips the
+Refiner and Generator subagents entirely** — it goes straight from the
+Epic's description to generated User Stories (no DoR validation, no test
+case generation).
+
+```
+User → Conductor
+  Conductor → Story Writer → Conductor
+  Conductor → User (generated User Stories, and — in CI — created Jira keys)
+```
+
+**Steps:**
+
+1. Receive the Epic Jira key from the user (or CI trigger).
+2. Delegate to the **Story Writer** subagent with the Epic key.
+3. The Story Writer fetches the Epic, decomposes its description into
+   vertically-sliced, INVEST-aligned User Stories, and:
+   - **Local**: presents the stories and asks for confirmation before
+     creating them in Jira.
+   - **CI**: creates one Jira **Story** per User Story automatically,
+     linked to the Epic (`fields.parent.key`).
+4. Present the resulting User Stories (and, in CI, the created Jira keys) to
+   the user.
 
 ## Skills
 

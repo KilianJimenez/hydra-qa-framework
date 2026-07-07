@@ -15,6 +15,9 @@ case "${ACTION_TO_PERFORM:-}" in
   manual-test)
     echo "/implementation-ready"
     ;;
+  create-us)
+    echo "/create-user-stories"
+    ;;
   *)
     echo "Unknown ACTION_TO_PERFORM: '${ACTION_TO_PERFORM:-}'" >&2
     exit 1

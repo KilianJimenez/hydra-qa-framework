@@ -1,4 +1,4 @@
-name: "QA: Refinement from Jira"
+name: "QA: Workflow from Jira"
 
 # Triggered by Jira Automation via an incoming webhook.
 # In Jira Automation, configure a "Send web request" action with:
@@ -119,12 +119,18 @@ jobs:
           AGENT_OUTPUT_FILE="$RUNNER_TEMP/agent-output.txt"
           [ -f "$AGENT_OUTPUT_FILE" ] || echo "No agent output was captured." > "$AGENT_OUTPUT_FILE"
 
+          # Strip ANSI escape codes and other control characters (except newlines/tabs)
+          # that would cause Jira's ADF validator to reject the request with HTTP 400.
+          CLEAN_OUTPUT_FILE="$RUNNER_TEMP/agent-output-clean.txt"
+          sed 's/\x1b\[[0-9;]*[A-Za-z]//g; s/\x1b[^[]*[A-Za-z]//g; s/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]//g' \
+            "$AGENT_OUTPUT_FILE" > "$CLEAN_OUTPUT_FILE"
+
           BODY=$(jq -n \
             --arg run_url "$RUN_URL" \
-            --rawfile agent_output "$AGENT_OUTPUT_FILE" \
+            --rawfile agent_output "$CLEAN_OUTPUT_FILE" \
             '{body:{version:1,type:"doc",content:[
               {type:"paragraph",content:[{type:"text",text:"Copilot QA agent result:"}]},
-              {type:"codeBlock",attrs:{language:"text"},content:[{type:"text",text:$agent_output}]},
+              {type:"codeBlock",attrs:{language:"plain"},content:[{type:"text",text:$agent_output}]},
               {type:"paragraph",content:[{type:"text",text:"Full results: "},{type:"text",text:"GitHub Actions run",marks:[{type:"link",attrs:{href:$run_url}}]}]}
             ]}}')
 
