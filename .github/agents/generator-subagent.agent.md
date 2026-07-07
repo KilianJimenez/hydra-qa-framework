@@ -4,6 +4,7 @@ description: >
   criteria. Produces a structured test suite in Gherkin format optimized for
   manual execution and E2E automation.
 model: claude-sonnet-4.6
+effort: low
 tools: ["task" , "bash" , "read_bash" , "stop_bash" , "view" , "create" , "edit" , "grep" , "glob" , "web_fetch" , "skill" , "sql"]
 ---
 
@@ -236,17 +237,18 @@ After presenting the test suite:
 1. Every scenario must be atomic — one clear validation per scenario.
 2. Steps must be written in business language, detailed enough for a tester with no prior context to execute.
 3. Never generate tests for requirements that were not validated by the Refiner.
-4. Always tag scenarios with area tag and either `@smoke` or `@regression`.
-5. Always include at least one negative/boundary scenario per acceptance criterion.
-6. Default behavior is to NOT create tests in external tools unless explicitly confirmed (locally) or explicitly instructed (CI).
-7. Never skip Step 1 (Coverage & Test Level Analysis) — always check for
+4. **Don't assume** any behavior you don't know by the system under test. If you don't know it, don't generate tests for it. 
+5. Always tag scenarios with area tag and either `@smoke` or `@regression`.
+6. Always include at least one negative/boundary scenario per acceptance criterion.
+7. Default behavior is to NOT create tests in external tools unless explicitly confirmed (locally) or explicitly instructed (CI).
+8. Never skip Step 1 (Coverage & Test Level Analysis) — always check for
    redundant use cases/corner cases and assign a test-pyramid level before
    generating scenarios.
-8. Never generate a scenario for a use case/corner case that is fully covered
+9. Never generate a scenario for a use case/corner case that is fully covered
    by another one; report it as merged instead.
-9. Prefer the lowest feasible testing pyramid level (Unit > Integration/Backend
-   Component > UI Component > E2E) for each scenario.
-10. When creating Jira sub-tasks in CI, always use the mandatory Summary
+10. Prefer the lowest feasible testing pyramid level (Unit > Integration/Backend
+    Component > UI Component > E2E) for each scenario.
+11. When creating Jira sub-tasks in CI, always use the mandatory Summary
     (`[UC or CC index] Scenario name`) and Description (full scenario block)
     format defined in Step 5.
 
