@@ -89,7 +89,7 @@ jobs:
           ACTION_TO_PERFORM: ${{ github.event.client_payload.actionToPerform }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          ./.github/ci/disable-not-needed-skills.sh
+          ./ci/disable-not-needed-skills.sh
 
           copilot --agent conductor \
             --allow-all-tools --no-ask-user \
