@@ -21,6 +21,8 @@ The following environment variables must be set before making any API call:
 | `JIRA_EMAIL`      | Email address of the Jira account used for authentication                 | `qa-bot@your-org.com`                |
 | `JIRA_API_TOKEN`  | Atlassian API token (generate at https://id.atlassian.com/manage-profile/security/api-tokens) | `ATATxxxxxxxx` |
 
+Export them from `.env` if they are not set.
+
 ## API Endpoint
 
 ```
@@ -36,31 +38,61 @@ Authorization: Basic base64("{JIRA_EMAIL}:{JIRA_API_TOKEN}")
 Accept: application/json
 ```
 
-## Helper Script
-
-A pre-built utility is available at `.github/ci/get-jira-issue.mjs`. Use it to fetch and normalize a Jira issue in one command:
-
-```bash
-# Returns normalized plain-text issue content to stdout
-JIRA_BASE_URL=https://your-org.atlassian.net \
-JIRA_EMAIL=qa-bot@your-org.com \
-JIRA_API_TOKEN=ATATxxxxxxxx \
-node .github/ci/get-jira-issue.mjs PROJ-1234
-```
-
-The script exits with code `0` on success and `1` on error. On success, it prints the normalized issue content ready to be passed to the Refiner.
-
 ## Direct API Call (curl)
 
-```bash
-ISSUE_KEY="PROJ-1234"
-AUTH=$(echo -n "${JIRA_EMAIL}:${JIRA_API_TOKEN}" | base64)
+This is the primary, self-contained way to retrieve a Jira issue. No external
+scripts or helper files are required — only `curl`, `base64`, and `jq` (all
+available in a standard shell / CI runner).
 
-curl -s \
-  -H "Authorization: Basic ${AUTH}" \
-  -H "Accept: application/json" \
-  "${JIRA_BASE_URL}/rest/api/3/issue/${ISSUE_KEY}"
-```
+1. **Build the Basic-auth header** from `JIRA_EMAIL` and `JIRA_API_TOKEN`:
+
+   ```bash
+   AUTH=$(printf '%s' "${JIRA_EMAIL}:${JIRA_API_TOKEN}" | base64 -w 0)
+   ```
+
+2. **Call `GET /rest/api/3/issue/{key}`**:
+
+   ```bash
+   ISSUE_KEY="PROJ-1234"
+
+   curl -s \
+     -H "Authorization: Basic ${AUTH}" \
+     -H "Accept: application/json" \
+     "${JIRA_BASE_URL}/rest/api/3/issue/${ISSUE_KEY}" > issue.json
+   ```
+
+3. **Parse the JSON response with `jq`** to pull out the fields needed for
+   refinement/generation:
+
+   ```bash
+   jq -r '.fields.summary' issue.json
+   jq -r '.fields.issuetype.name' issue.json
+   jq -r '.fields.priority.name // "Not set"' issue.json
+   jq -r '.fields.status.name' issue.json
+   jq -c '.fields.description' issue.json      # ADF — convert to text, see below
+   jq -r '.fields.labels | join(", ")' issue.json
+   jq -r '.fields.components | map(.name) | join(", ")' issue.json
+   ```
+
+4. **Convert the ADF `description` to plain text.** The `description` field is
+   an Atlassian Document Format (ADF) tree. Walk its `content` nodes and
+   concatenate all `text` leaves (recursively through `paragraph`,
+   `bulletList`/`listItem`, `heading`, etc. nodes), preserving line breaks
+   between block-level nodes. A minimal `jq` recursive-descent extraction:
+
+   ```bash
+   jq -r '[.fields.description | .. | .text? // empty] | join(" ")' issue.json
+   ```
+
+   For richer structure (headings, lists) prefer walking `content` explicitly
+   node-by-node so headings/lists are preserved on their own lines.
+
+5. **Extract acceptance criteria** — see below.
+
+6. **Emit the Normalized Output Format** (below) so it can be passed directly
+   to the Refiner/Generator.
+
+If the response is non-200, apply the Error Handling table below and stop.
 
 ## Response Structure
 
