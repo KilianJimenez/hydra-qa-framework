@@ -12,15 +12,21 @@ name: "QA: Refinement from Jira"
 #       "event_type": "jira-qa-trigger",
 #       "client_payload": {
 #         "issue_key":       "{{issue.key}}",
-#         "issue_summary":   "{{issue.summary}}",
+#         "issue_summary":   "{{issue.summary.escapeJson}}",
 #         "issue_type":      "{{issue.type}}",
 #         "status":          "{{issue.status.name}}",
-#         "description":     "{{issue.description}}",
-#         "reporter":        "{{issue.reporter.displayName}}",
-#         "assignee":        "{{issue.assignee.displayName}}",
+#         "description":     "{{issue.description.escapeJson}}",
+#         "reporter":        "{{issue.reporter.displayName.escapeJson}}",
+#         "assignee":        "{{issue.assignee.displayName.escapeJson}}",
 #         "actionToPerform": "{{actionToPerform}}"
 #       }
 #     }
+#
+#   IMPORTANT: any smart value that can contain free-text (summary, description,
+#   display names, etc.) MUST use the `.escapeJson` modifier. Jira Automation
+#   substitutes smart values as raw text — unescaped quotes, backslashes, or
+#   newlines in the source field will break the JSON body and GitHub's
+#   `dispatches` endpoint will reject it with "Problems parsing JSON" (HTTP 400).
 #
 #   `actionToPerform` is a Jira Automation Smart Value. Create it beforehand with
 #   the rule's "Create variable" action (name: actionToPerform) — or supply it as
@@ -83,6 +89,8 @@ jobs:
           ACTION_TO_PERFORM: ${{ github.event.client_payload.actionToPerform }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
+          ./.github/ci/disable-not-needed-skills.sh
+
           copilot --agent conductor \
             --allow-all-tools --no-ask-user \
             --log-level error --no-color \
