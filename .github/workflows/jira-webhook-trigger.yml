@@ -78,7 +78,7 @@ jobs:
           echo "Reporter:      ${{ github.event.client_payload.reporter }}"
           echo "Action:        ${{ github.event.client_payload.actionToPerform }}"
 
-      - name: Run New Feature Definition workflow
+      - name: Jira Workflow
         id: qa-workflow
         env:
           # CI is already set to "true" by the GitHub Actions runner by
@@ -99,7 +99,7 @@ jobs:
 
           PROMPT="$(./ci/select-prompt.sh)"
 
-          copilot -s --agent conductor \
+          copilot --agent conductor \
             --allow-all-tools --no-ask-user \
             --log-level error --no-color \
             -p "$PROMPT $ISSUE_KEY" \
