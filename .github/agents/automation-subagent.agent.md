@@ -39,6 +39,10 @@ You will receive from the Conductor:
 - A set of **test cases** to automate.
 - **Execution evidence** from the Manual subagent (URLs, selectors, interactions, data).
 - The **functional area** context.
+- **Execution Context**: `CI` or `Local`, always provided explicitly by the
+  Conductor — never infer it from other cues. Include it in your summary
+  when reporting results back, since it affects whether tests could be run
+  against a live environment.
 
 ## Tech Stack
 

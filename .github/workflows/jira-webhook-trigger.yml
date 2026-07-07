@@ -81,6 +81,12 @@ jobs:
       - name: Run New Feature Definition workflow
         id: qa-workflow
         env:
+          # CI is already set to "true" by the GitHub Actions runner by
+          # default, but it is declared explicitly here for clarity: the
+          # Conductor agent checks this variable to determine its Execution
+          # Context (CI vs Local) and forwards it explicitly to every
+          # subagent it delegates to (Refiner, Generator, Manual, Automator).
+          CI: "true"
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_CLI_TOKEN }}
           JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
           JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}

@@ -154,6 +154,27 @@ Workflows 1 and 2 can also be triggered from CI via GitHub Actions using GitHub 
 | Defect reporting   | Interactive decision                | Not available in CI mode                |
 | Output             | Chat conversation                   | Job summary + artifact (JSON)           |
 
+### Execution Context Signal
+
+The Conductor must never guess whether it is running in CI or locally.
+Instead:
+
+- CI workflows that invoke the Conductor directly (currently
+  `.github/workflows/jira-webhook-trigger.yml`, which runs
+  `copilot --agent conductor --no-ask-user`) rely on the standard `CI`
+  environment variable, which GitHub Actions sets to `"true"` automatically
+  on every runner (declared explicitly in the workflow's `env:` block for
+  clarity).
+- At the start of any workflow, the Conductor checks `$CI` to determine its
+  **Execution Context** (`CI` or `Local`) and explicitly forwards this value
+  to every subagent it delegates to (Refiner, Generator, Manual, Automator)
+  as part of the delegation payload.
+- Subagents rely solely on this explicit `Execution Context` field from the
+  Conductor — they must never infer CI mode from other cues (flags, tool
+  availability, prompt wording, etc.). See each subagent's `.agent.md` file
+  for how this signal affects its behavior (e.g. the Generator uses it to
+  decide whether to create Jira sub-tasks without asking for confirmation).
+
 ### Prerequisites
 
 - A GitHub account with **GitHub Copilot** subscription (provides Models API access).

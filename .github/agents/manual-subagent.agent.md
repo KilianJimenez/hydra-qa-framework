@@ -24,6 +24,11 @@ You will receive from the Conductor:
 - A set of **test cases** to execute (from the Generator or provided directly).
 - **Environment information** (base URL, credentials if applicable).
 - Any **preconditions** or setup instructions.
+- **Execution Context**: `CI` or `Local`, always provided explicitly by the
+  Conductor — never infer it from other cues. In `CI`, browser tooling is
+  typically unavailable; if so, do not attempt execution — report that
+  manual/browser testing was skipped due to CI execution context and return
+  control to the Conductor.
 
 ## Process
 
