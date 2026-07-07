@@ -55,7 +55,6 @@ If the input is a Jira identifier (e.g., `PROJ-1234`):
 2. Call `fetch_webpage` with that URL to retrieve the issue JSON.
 3. Extract the summary, description, and acceptance criteria from the response.
 4. Normalize the output following the format defined in `.github/skills/get-jira-issue/SKILL.md`.
-5. In CI or scripted contexts, use the helper script: `node .github/ci/get-jira-issue.mjs {issueKey}`
 6. Proceed to Step 1 using the normalized content.
 
 ### Step 1: Context Detection

@@ -11,24 +11,33 @@ name: "QA: Refinement from Jira"
 #     {
 #       "event_type": "jira-qa-trigger",
 #       "client_payload": {
-#         "issue_key":    "{{issue.key}}",
-#         "issue_summary": "{{issue.summary}}",
-#         "issue_type":   "{{issue.type}}",
-#         "status":       "{{issue.status.name}}",
-#         "description":  "{{issue.description}}",
-#         "reporter":     "{{issue.reporter.displayName}}",
-#         "assignee":     "{{issue.assignee.displayName}}"
+#         "issue_key":       "{{issue.key}}",
+#         "issue_summary":   "{{issue.summary}}",
+#         "issue_type":      "{{issue.type}}",
+#         "status":          "{{issue.status.name}}",
+#         "description":     "{{issue.description}}",
+#         "reporter":        "{{issue.reporter.displayName}}",
+#         "assignee":        "{{issue.assignee.displayName}}",
+#         "actionToPerform": "{{actionToPerform}}"
 #       }
 #     }
+#
+#   `actionToPerform` is a Jira Automation Smart Value. Create it beforehand with
+#   the rule's "Create variable" action (name: actionToPerform) — or supply it as
+#   a manual-trigger input — then reference it as {{actionToPerform}} in the body
+#   above. The workflow reads it via
+#   `${{ github.event.client_payload.actionToPerform }}`.
 #
 # Required repository secrets (Settings → Secrets and variables → Actions):
 #   JIRA_BASE_URL      — e.g. https://your-org.atlassian.net
 #   JIRA_EMAIL         — service-account email used for Jira REST API
 #   JIRA_API_TOKEN     — Jira API token for that service account
+#   COPILOT_CLI_TOKEN  — fine-grained PAT (v2) with "Copilot Requests" permission,
+#                        used to authenticate the GitHub Copilot CLI. Classic
+#                        (ghp_) tokens are not supported.
 #
 # Required repository variables (Settings → Secrets and variables → Actions → Variables):
 #   JIRA_QA_TRIGGER_EVENT_TYPE  — must match the event_type sent by Jira (default: jira-qa-trigger)
-#   GITHUB_MODELS_DEFAULT_MODEL — model to use (default: openai/gpt-4.1)
 
 on:
   repository_dispatch:
@@ -37,7 +46,6 @@ on:
 
 permissions:
   contents: read
-  models: read
 
 jobs:
   handle-jira-event:
@@ -53,9 +61,8 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install CI dependencies
-        working-directory: .github/ci
-        run: npm ci
+      - name: Install GitHub Copilot CLI
+        run: npm install -g @github/copilot
 
       - name: Print incoming payload (debug)
         run: |
@@ -63,27 +70,49 @@ jobs:
           echo "Issue Type:    ${{ github.event.client_payload.issue_type }}"
           echo "Status:        ${{ github.event.client_payload.status }}"
           echo "Reporter:      ${{ github.event.client_payload.reporter }}"
+          echo "Action:        ${{ github.event.client_payload.actionToPerform }}"
 
       - name: Run New Feature Definition workflow
         id: qa-workflow
-        working-directory: .github/ci
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_MODELS_MODEL: ${{ vars.GITHUB_MODELS_DEFAULT_MODEL || 'openai/gpt-4.1' }}
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_CLI_TOKEN }}
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          ISSUE_KEY: ${{ github.event.client_payload.issue_key }}
+          ACTION_TO_PERFORM: ${{ github.event.client_payload.actionToPerform }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          copilot --agent conductor \
+            --allow-all-tools --no-ask-user \
+            --log-level error --no-color \
+            -p "Follow the workflow defined in .github/prompts/new-feature.prompt.md.
+                Jira issue to process: $ISSUE_KEY. Action to perform: $ACTION_TO_PERFORM.
+                Use the get-jira-issue skill to fetch the issue via the Jira REST API." \
+            | tee "$RUNNER_TEMP/agent-output.txt"
+
+      - name: Comment result on Jira issue
+        if: always()
+        env:
           JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
           JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
           ISSUE_KEY: ${{ github.event.client_payload.issue_key }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          # Pass the Jira issue key so the Refiner can fetch full details via the API
         run: |
           BASE_URL="${JIRA_BASE_URL%/}"
           AUTH=$(printf '%s' "$JIRA_EMAIL:$JIRA_API_TOKEN" | base64 -w 0)
-          SUMMARY=$(jq -r '.summary // "No summary available."' "${{ runner.temp }}/workflow-output.json" 2>/dev/null || echo "No summary available.")
+          AGENT_OUTPUT_FILE="$RUNNER_TEMP/agent-output.txt"
+          [ -f "$AGENT_OUTPUT_FILE" ] || echo "No agent output was captured." > "$AGENT_OUTPUT_FILE"
 
           BODY=$(jq -n \
             --arg run_url "$RUN_URL" \
-            '{body:{version:1,type:"doc",content:[{type:"paragraph",content:[{type:"emoji",attrs:{shortName:":white_check_mark:"}},{type:"text",text:" Comment text executed from GitHub Actions."}]},{type:"paragraph",content:[{type:"text",text:"Full results: "},{type:"text",text:"GitHub Actions run",marks:[{type:"link",attrs:{href:$run_url}}]}]}]}}')
+            --rawfile agent_output "$AGENT_OUTPUT_FILE" \
+            '{body:{version:1,type:"doc",content:[
+              {type:"paragraph",content:[{type:"text",text:"Copilot QA agent result:"}]},
+              {type:"codeBlock",attrs:{language:"text"},content:[{type:"text",text:$agent_output}]},
+              {type:"paragraph",content:[{type:"text",text:"Full results: "},{type:"text",text:"GitHub Actions run",marks:[{type:"link",attrs:{href:$run_url}}]}]}
+            ]}}')
 
           curl --silent --fail --show-error \
             --request POST \
