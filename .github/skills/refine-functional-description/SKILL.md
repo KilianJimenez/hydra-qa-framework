@@ -54,13 +54,41 @@ Evaluate the input against these criteria. Mark each ✅ (met) or ❌ (gap).
 
 ## Step 4 — Corner Case Identification
 
-For each acceptance criterion, identify:
+For each acceptance criterion, consider candidate corner cases from these
+categories:
 
 - Boundary value scenarios.
 - Negative paths (invalid inputs, unauthorized access, missing data).
 - State transition edge cases.
 - Integration failure scenarios.
 - Concurrency or race conditions (only if the feature implies concurrent operations).
+
+### Step 4a — Relevance Filter (mandatory)
+
+A candidate corner case may only be **kept** if it passes this filter:
+
+- **Textual basis required**: it must be justifiable with a direct quote or
+  close paraphrase from the functional description (a component, constraint,
+  state, or behavior actually mentioned). Write this justification alongside
+  each kept corner case.
+- **No speculative infra/backend invention**: do not invent failure modes for
+  systems, services, or error codes that are not named in the description
+  (e.g. "CDN unavailable", "unmapped backend error code", "session expires
+  mid-flow") unless the description explicitly calls out that
+  system/behavior/risk.
+- **External/black-box components**: when the description states a component
+  is provided by an external team and scopes testing to a specific happy path
+  (e.g. "we will only test a simple e2e happy path"), do not generate corner
+  cases for that component's internal error handling beyond what is
+  explicitly documented — respect the stated scope boundary.
+- **Discard with reasoning**: any candidate that fails the filter must be
+  moved to the **Discarded Corner Cases** list (see Output Format) with a
+  one-line reason (e.g. "no textual basis in description", "explicitly out of
+  scope per description"). Do not silently drop it — surface it for
+  transparency, but do not count it as a validated corner case.
+
+There is no fixed quota — the number of surviving corner cases should track
+what the description actually implies, not an arbitrary target.
 
 ---
 
@@ -88,11 +116,15 @@ For each acceptance criterion, identify:
 2. [AC-2]: [description] ✅
 
 ### Additional Corner Cases Identified:
-1. [CC-1]: [description]
-2. [CC-2]: [description]
+1. [CC-1]: [description] — *basis: [quote/paraphrase from description]*
+2. [CC-2]: [description] — *basis: [quote/paraphrase from description]*
+
+### Discarded / Out of Scope Corner Cases:
+1. [description] — *reason: [no textual basis in description | explicitly out of scope per description | covered by external/black-box component happy-path-only testing]*
+2. [description] — *reason: [...]*
 
 ### Complete Criteria for Testing:
-[Merged list of original ACs + identified corner cases, ready for test generation]
+[Merged list of original ACs + surviving (non-discarded) corner cases, ready for test generation]
 ```
 
 ### If NOT READY
@@ -118,7 +150,9 @@ For each acceptance criterion, identify:
 ## Rules
 
 - Be thorough but pragmatic — do not invent requirements that are not implied.
-- Always list corner cases even when the verdict is READY.
+- Only list corner cases that pass the Step 4a Relevance Filter (direct
+  textual basis); log anything else in the Discarded list instead of treating
+  it as a validated corner case.
 - Output is returned in the conversation only — do not write to Jira or Confluence.
 - When using a Jira ID, fetch the full issue before any analysis.
 - Apply business context files when available; do not assume domain knowledge otherwise.
