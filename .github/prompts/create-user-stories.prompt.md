@@ -23,15 +23,21 @@ are **not** involved (no DoR validation, no test case generation).
 ## Workflow
 
 1. The Conductor delegates to the **Story Writer** subagent with the Epic key.
-2. The **Story Writer** fetches the Epic (via `get-jira-issue`) and decomposes
-   its description into cohesive User Stories using **vertical slicing** —
-   each story is a thin, end-to-end slice cutting through all layers (UI →
+2. The **Story Writer** fetches the Epic (via `get-jira-issue`), detects the
+   language of its description, and decomposes it into cohesive User Stories
+   using **vertical slicing at feature/deliverable level** — grouping
+   related requirement variants (e.g. different configuration types of the
+   same component) into a single story rather than one story per bullet.
+   Each story is a thin, end-to-end slice cutting through all layers (UI →
    API/business logic → data) that delivers independently demonstrable,
    testable value. Horizontal/technical-layer stories (e.g. "build the DB
-   schema", "create the API only") are explicitly avoided.
-3. Each User Story is INVEST-aligned and follows the standard format:
-   `As a <role>, I want <goal>, so that <benefit>` plus a short
-   acceptance-criteria list.
+   schema", "create the API only") are explicitly avoided. As a rough
+   guideline, expect ~4-6 stories for a mid-size Epic, factoring in the
+   implementation effort/time a team would need per story and overall.
+3. Each User Story is INVEST-aligned and includes: a short business-context
+   description paragraph, the story statement
+   (`As a <role>, I want <goal>, so that <benefit>`), and a short
+   acceptance-criteria list — all written in the Epic's detected language.
 4. The generated stories are presented for review (Local) or persisted
    directly (CI, see below).
 
@@ -43,22 +49,28 @@ follows — this is the explicit instruction its persistence step requires, not
 merely a description of it:
 
 > **Execution Context: CI.** Fetch the Epic `$ISSUE_KEY` using the
-> `get-jira-issue` skill, decompose its description into vertically-sliced
-> User Stories, and create one Jira **Story** per generated User Story using
-> the `create-jira-issue` skill, with `fields.parent.key` set to `$ISSUE_KEY`,
-> without asking for confirmation. Do **not** create or modify any repository
-> files (no `.feature` files, no other files) and do **not** run any `git`
-> command (no `git add`, `git commit`, `git push`). The only allowed
-> persistence mechanism is the `create-jira-issue` skill. Report the mapping
-> of User Story → created Jira issue key back to the Conductor.
+> `get-jira-issue` skill, detect the language of its description, decompose
+> it into vertically-sliced User Stories grouped at feature/deliverable
+> level (not per requirement bullet), each with a short business-context
+> description paragraph, story statement, and acceptance criteria — all
+> written in the detected language — and create one Jira **Story** per
+> generated User Story using the `create-jira-issue` skill, with
+> `fields.parent.key` set to `$ISSUE_KEY`, without asking for confirmation.
+> Do **not** create or modify any repository files (no `.feature` files, no
+> other files) and do **not** run any `git` command (no `git add`,
+> `git commit`, `git push`). The only allowed persistence mechanism is the
+> `create-jira-issue` skill. Report the mapping of User Story → created
+> Jira issue key back to the Conductor.
 
 Locally (`Execution Context: Local`), the Story Writer always asks the user
 first before persisting anything.
 
 ## Expected Output
 
-- A set of vertically-sliced, INVEST-aligned User Stories derived from the
-  Epic description.
+- A set of feature/deliverable-level, vertically-sliced, INVEST-aligned User
+  Stories derived from the Epic description, each with a business-context
+  description paragraph, story statement, and acceptance criteria, written
+  in the Epic's detected language.
 - (CI) Each User Story created as a Jira **Story** linked to the source Epic,
   with the mapping of User Story → Jira key reported back.
 

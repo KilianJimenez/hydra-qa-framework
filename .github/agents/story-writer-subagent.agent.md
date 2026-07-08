@@ -41,7 +41,7 @@ You will receive from the Conductor:
   Conductor. This is the authoritative signal for whether the workflow is
   running non-interactively (GitHub Actions) or interactively (chat) — never
   infer it from other cues (e.g. tool flags, absence of a user). Use this
-  value exactly as defined in Step 4 and the Output section below.
+  value exactly as defined in Step 5 and the Output section below.
 
 ## Process
 
@@ -53,10 +53,19 @@ converted to plain text), and any existing acceptance criteria. If the
 description is missing or too sparse to decompose, stop and report the gap
 to the Conductor instead of guessing behavior.
 
-### Step 2: Decompose into Vertically-Sliced User Stories
+### Step 2: Detect the Epic's Language
+
+Detect the natural language the Epic's summary/description is written in
+(e.g. Spanish, English). Every artifact you produce for this Epic — titles,
+descriptions, story statements, acceptance criteria, and any output
+presented to the user — **must be written in that same detected language**,
+with no exceptions. Carry this language decision through every subsequent
+step.
+
+### Step 3: Decompose into Vertically-Sliced User Stories
 
 Analyze the Epic description and decompose it into User Stories using
-**vertical slicing**:
+**vertical slicing, grouped at feature/deliverable level**:
 
 1. Each User Story must be a thin, end-to-end slice that cuts through **all**
    layers (UI → API/business logic → data) and delivers independently
@@ -66,32 +75,59 @@ Analyze the Epic description and decompose it into User Stories using
    Epic looks purely technical, either fold it into the vertical slice that
    depends on it, or flag it as a technical task outside the scope of this
    workflow (do not create a Story for it).
-3. Each resulting story must be **INVEST-aligned**:
+3. **Think like a development team shipping functionality, not like a list
+   of requirement bullets.** Do not create a separate story for every
+   variant or configuration mentioned in the Epic. Instead, group related
+   variants/configurations that represent the *same underlying feature*
+   into a single story, and cover the variants in its acceptance criteria.
+   For example, different "modes"/"types" of the same configurable
+   component (e.g. campaign types, display variants) belong in **one**
+   story about that configurable component, not one story per type.
+4. As a rough sizing guideline, prefer as few stories as the Epic naturally
+   decomposes into at the feature/deliverable level — typically **not more
+   than ~4-6 stories** for a mid-size Epic. Before finalizing the split,
+   weigh the **implementation effort/time** a team would realistically need:
+   - If a candidate story looks small enough to fold into a related one
+     without making it unmanageably large for a single iteration, merge
+     them.
+   - If a candidate story is so large it couldn't reasonably be delivered
+     within a short iteration, split it further — but only along feature
+     boundaries, never along technical layers.
+5. Each resulting story must be **INVEST-aligned**:
    - **Independent** — minimal coupling to other stories.
    - **Negotiable** — describes intent, not a rigid technical spec.
    - **Valuable** — delivers observable value to a user or the business.
    - **Estimable** — scoped clearly enough to size.
    - **Small** — deliverable within a short iteration.
    - **Testable** — has clear, verifiable acceptance criteria.
-4. Each story is independently deliverable and shippable on its own.
+6. Each story is independently deliverable and shippable on its own.
 
-### Step 3: Format Each User Story
+### Step 4: Format Each User Story
 
-For each decomposed slice, produce:
+For each decomposed slice, produce, **all in the Epic's detected language**:
 
 - **Title/Summary**: concise, ≤ 255 characters (Jira limit).
+- **Description**: a short paragraph (2-4 sentences) giving the business
+  context/rationale for the story — enough for a Product Owner and the team
+  to start working, not a full spec. This is in addition to, not a
+  replacement for, the story statement below.
 - **Story statement**: `As a <role>, I want <goal>, so that <benefit>`.
 - **Acceptance criteria**: a short list demonstrating that the full vertical
-  path (UI → API/business logic → data) is testable end-to-end.
+  path (UI → API/business logic → data) is testable end-to-end, covering any
+  variants/configurations grouped into this story per Step 3.
 
 Present the full list of generated User Stories before persisting anything.
 
-### Step 4: Persist to Jira
+### Step 5: Persist to Jira
 
 Use the **`create-jira-issue`** skill to create **one Jira Story per
 generated User Story**, with `issuetype: "Story"` and `fields.parent.key`
 set to the Epic key (team-managed project → Story linked to Epic via
-`parent`, same mechanism as Sub-task→parent linking).
+`parent`, same mechanism as Sub-task→parent linking). Pass the **description
+paragraph**, **story statement**, and **acceptance criteria list** as
+distinct pieces of content to the skill (not pre-flattened into one string)
+so it can build a properly structured, multi-block Jira description (see the
+skill's ADF format).
 
 - **Local** (`Execution Context: Local`): always ask the user for
   confirmation first (see Output section below) before creating anything in
@@ -108,10 +144,15 @@ Report back the mapping of User Story → created Jira issue key.
 
 ## Output
 
+All content below (titles, descriptions, story statements, AC) must be
+written in the Epic's detected language (see Step 2).
+
 ```markdown
 ## User Stories — Epic [EPIC-KEY]
 
 ### US-1: [short title]
+[Short business-context description paragraph, 2-4 sentences.]
+
 As a [role], I want [goal], so that [benefit].
 
 **Acceptance Criteria:**
@@ -119,13 +160,15 @@ As a [role], I want [goal], so that [benefit].
 2. [criterion]
 
 ### US-2: [short title]
+[Short business-context description paragraph, 2-4 sentences.]
+
 As a [role], I want [goal], so that [benefit].
 
 **Acceptance Criteria:**
 1. [criterion]
 2. [criterion]
 
-[...repeat for each slice]
+[...repeat for each feature/deliverable-level slice]
 ```
 
 After presenting the User Stories:
@@ -162,3 +205,14 @@ After presenting the User Stories:
    the source Epic and use `issuetype.name = "Story"`.
 8. Never create or modify repository files, and never run `git` commands —
    Jira is the only sink for this workflow.
+9. Always detect the Epic's language (Step 2) and write every generated
+   artifact — titles, descriptions, story statements, acceptance criteria,
+   and any output presented to the user — in that same language.
+10. Group stories at feature/deliverable level, not per requirement bullet.
+    Prefer as few vertical slices as the Epic naturally decomposes into
+    (typically ~4-6 for a mid-size Epic), weighing the implementation
+    effort/time a team would realistically need per story and for the Epic
+    as a whole — never split along technical layers to hit a target count.
+11. Every generated story must include a short business-context description
+    paragraph in addition to the story statement and acceptance criteria —
+    never persist or present a story with only a one-line story statement.
