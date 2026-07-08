@@ -75,20 +75,51 @@ Scenario: [scenario name]
 
 ### Step 2: Test Suite Optimization
 
-1. **Group by Feature**: Create one `Feature` block per functional area or acceptance criterion group.
+1. **Group by user-facing flow**: Create one `Feature` block per user-facing
+   flow or functional grouping (e.g. "Newsletter Subscription", "Registration
+   Flow", "SEO & Indexing", "Rendering & Error States") — matching the
+   groupings the Refiner already produced in "Complete Criteria for Testing" —
+   rather than one Feature per individual AC/CC. Do not create a separate
+   Feature for every single criterion.
 2. **Use Background**: Extract shared `Given` preconditions into a `Background` block.
 3. **Order by priority**: High-priority scenarios first within each feature.
-4. **Eliminate redundancy**: Merge overlapping scenarios into a `Scenario Outline` without losing coverage.
+4. **Mandatory consolidation**: Whenever two or more ACs/CCs differ only by
+   data values (e.g. SEO `index/noindex` × `follow/nofollow` combinations,
+   multiple invalid-email-format examples, multiple invalid-input boundary
+   cases), they **must** be merged into a single `Scenario Outline` with an
+   `Examples` table — never generated as separate scenarios or separate
+   Feature blocks. Report each such merge in Step 3.
+5. **Eliminate redundancy**: Merge any remaining overlapping scenarios into a
+   `Scenario Outline` without losing coverage.
 
 ### Step 3: Coverage Validation
 
 Verify that:
 
 - Every acceptance criterion has at least one scenario, unless it was marked
-  "merged" in Step 1.
-- Every identified corner case has at least one scenario, unless it was
-  marked "merged" in Step 1.
+  "merged" in Step 1/2 or moved to "Not Automated / Out of Scope" below.
+- Every identified corner case (that the Refiner did not already discard) has
+  at least one scenario, unless it was marked "merged" in Step 1/2 or moved to
+  "Not Automated / Out of Scope".
 - There is at least one positive and one negative scenario for each major criterion.
+
+#### Not Automated / Out of Scope
+
+Move an AC/CC to this list instead of generating a scenario for it when:
+
+- The Refiner already flagged it in its "Discarded / Out of Scope Corner
+  Cases" list — do not resurrect it as a scenario.
+- It is not functionally testable at E2E/UI level given the description (e.g.
+  it requires verifying an implementation detail like a raw HTML `<meta>` tag
+  at source level, which may belong to a lower test level than the one being
+  generated) — note the more appropriate test level instead of forcing an E2E
+  scenario.
+- It lacks genuine functional relevance to the actual description (speculative
+  edge case with no basis in the input), even if it slipped through from the
+  Conductor/Refiner — flag it here with a one-line reason rather than
+  generating a scenario for it.
+
+List each entry as: `[UC/CC reference] — reason`.
 
 ### Step 4: Persist to Jira (when requested)
 
@@ -168,6 +199,13 @@ Feature: [Feature Name]
 
 ```
 
+### Not Automated / Out of Scope
+
+```markdown
+1. [UC/CC reference] — [reason: discarded by Refiner | wrong test level for E2E | no functional relevance to description]
+2. [UC/CC reference] — [reason]
+```
+
 After presenting the test suite:
 
 - **Local (interactive)**: ask the user:
@@ -202,4 +240,12 @@ After presenting the test suite:
 11. When creating Jira sub-tasks in CI, always use the mandatory Summary
     (`[UC or CC index] Scenario name`) and Description (full scenario block)
     format defined in Step 5.
+12. Prefer consolidation over one scenario per criterion — group Features by
+    user-facing flow and mandatorily merge data-variant criteria into a single
+    `Scenario Outline` (see Step 2.4). Do not fragment a single flow into many
+    near-duplicate scenarios/features.
+13. Do not generate an E2E scenario for a criterion that lacks genuine
+    functional relevance to the actual description, or that the Refiner
+    already discarded — move it to "Not Automated / Out of Scope" with a
+    one-line reason instead of test-fitting it.
 
