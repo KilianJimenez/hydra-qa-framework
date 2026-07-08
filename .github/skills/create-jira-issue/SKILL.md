@@ -20,6 +20,9 @@ parent issue via `fields.parent`:
   (primary/original use case, e.g. the Generator subagent).
 - **Story per generated User Story**, linked to its source Epic (team-managed
   project → `fields.parent.key = <Epic key>`, e.g. the Story Writer subagent).
+  A Story's description is a **multi-block ADF document** — a short
+  business-context paragraph, the story statement, and a bulleted
+  Acceptance Criteria list — not a single flattened paragraph.
 
 The `fields.parent` mechanism is the same regardless of `issuetype` — only
 the `issuetype.name` value and the semantics of "parent" (literal parent for
@@ -148,20 +151,45 @@ back to the Conductor/user at the end.
 
 To create one Story per generated User Story, linked to the source Epic,
 iterate the generated stories and repeat steps 3–5 for each, reusing
-`PARENT_KEY` (the Epic key), `PROJECT_KEY`, and `ISSUE_TYPE="Story"`:
+`PARENT_KEY` (the Epic key), `PROJECT_KEY`, and `ISSUE_TYPE="Story"`.
+
+Each User Story has **three distinct content blocks** — do not flatten them
+into a single string — because Jira ADF paragraphs do not render embedded
+`\n` as line breaks (a flattened blob collapses visually into what looks
+like a single line, hiding the AC list). Build a proper multi-block ADF
+document instead: one `paragraph` for the description, one `paragraph` for
+the story statement, and a `bulletList` for the acceptance criteria:
 
 ```bash
 PARENT_KEY="PROJ-1000"        # Epic key
 PROJECT_KEY=$(echo "$PARENT_KEY" | cut -d- -f1)
 ISSUE_TYPE="Story"
 
-for i in "${!USER_STORIES[@]}"; do
-  STORY_TEXT="${USER_STORIES[$i]}"       # "As a ... I want ... so that ..." + AC list
-  SUMMARY=$(echo "$STORY_TEXT" | head -n1 | cut -c1-255)
+# For each generated story, keep these as separate variables:
+#   TITLE          - short title (used as SUMMARY, <=255 chars)
+#   DESCRIPTION    - short business-context paragraph (2-4 sentences)
+#   STORY_STATEMENT - "As a ... I want ... so that ..."
+#   AC_ITEMS        - bash array of acceptance-criteria strings
 
-  DESCRIPTION_ADF=$(jq -n --arg text "$STORY_TEXT" \
-    '{version:1,type:"doc",content:[
-       {type:"paragraph",content:[{type:"text",text:$text}]}
+for i in "${!TITLES[@]}"; do
+  SUMMARY=$(echo "${TITLES[$i]}" | cut -c1-255)
+  DESCRIPTION="${DESCRIPTIONS[$i]}"
+  STORY_STATEMENT="${STORY_STATEMENTS[$i]}"
+
+  # Build the AC bulletList content from the AC_ITEMS array for this story
+  AC_JSON=$(printf '%s\n' "${AC_ITEMS[$i]}" | jq -R . | jq -s '
+    map({type:"listItem", content:[{type:"paragraph", content:[{type:"text", text:.}]}]})
+  ')
+
+  DESCRIPTION_ADF=$(jq -n \
+    --arg desc "$DESCRIPTION" \
+    --arg story "$STORY_STATEMENT" \
+    --argjson acItems "$AC_JSON" \
+    '{version:1, type:"doc", content:[
+       {type:"paragraph", content:[{type:"text", text:$desc}]},
+       {type:"paragraph", content:[{type:"text", text:$story}]},
+       {type:"heading", attrs:{level:3}, content:[{type:"text", text:"Acceptance Criteria"}]},
+       {type:"bulletList", content:$acItems}
      ]}')
 
   BODY=$(jq -n \
@@ -187,6 +215,10 @@ for i in "${!USER_STORIES[@]}"; do
   # ... check status per Error Handling below, extract .key ...
 done
 ```
+
+All text (`TITLE`, `DESCRIPTION`, `STORY_STATEMENT`, `AC_ITEMS`) must already
+be in the Epic's detected language — this skill does not translate content,
+it only persists what the calling agent (e.g. Story Writer) provides.
 
 Collect the created issue keys and report the full mapping (User Story →
 Jira key) back to the Conductor/user at the end.
@@ -221,5 +253,6 @@ registered user, I want to reset my password, so that I can regain access to
 my account".
 
 **Result:** A new `Story` `PROJ-1050` created with `fields.parent.key =
-PROJ-1000`, with the story statement and acceptance criteria stored in its
-description.
+PROJ-1000`, with a business-context description paragraph, the story
+statement, and the acceptance criteria (as a bulleted list) stored as
+separate blocks in its description.
